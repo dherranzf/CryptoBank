@@ -60,6 +60,27 @@ contract CryptoBank {
         emit EtherWithdrawal(msg.sender, amount_);
     }
 
+    function depositToken(address token, uint256 amount) external whenNotPaused {
+        require(amount > 0, "Deposit amount must be greater than zero");
+        require(IERC20(token).transferFrom(msg.sender, address(this), amount), "Token transfer failed");
+
+        userTokenBalances[msg.sender][token] += amount;
+        emit TokenDeposit(msg.sender, token, amount);
+    }
+
+    function withdrawToken(address token, uint256 amount) external whenNotPaused {
+        require(amount > 0, "Withdrawal amount must be greater than zero");
+        require(userTokenBalances[msg.sender][token] >= amount, "Insufficient token balance");
+
+        userTokenBalances[msg.sender][token] -= amount;
+        require(IERC20(token).transfer(msg.sender, amount), "Token transfer failed");
+
+        emit TokenWithdrawal(msg.sender, token, amount);
+    }
+
+    function getTokenBalance(address user, address token) external view returns (uint256) {
+        return userTokenBalances[user][token];
+    }
 
     function setMaxEtherBalance(uint256 newMaxUserEtherBalance_) external onlyAdmin {
         maxUserEtherBalance = newMaxUserEtherBalance_;
@@ -82,6 +103,14 @@ contract CryptoBank {
         require(success, "Recovery funds failed");
     }
 
+    function recoverTokensInContract(address token, uint256 amount, address recipient) external onlyAdmin {
+        require(token != address(0), "Invalid token address");
+        require(recipient != address(0), "Invalid recipient address");
+        require(amount > 0, "Amount must be greater than zero");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Insufficient token balance in contract");
+
+        require(IERC20(token).transfer(recipient, amount), "Token transfer failed");
+    }
     
     function pauseContract() external onlyAdmin {
         paused = true;
