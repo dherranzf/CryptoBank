@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.28;
 
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract CryptoBank {
 
@@ -121,7 +117,4 @@ contract CryptoBank {
         paused = false;
         emit ContractUnpaused(msg.sender);
     }
-
-
-
 }
